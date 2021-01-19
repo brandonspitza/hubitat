@@ -857,7 +857,7 @@ def setCBulb(bulbC) {
         log("${app.label}: ${bulbC} Current bulb CT: ${currCT}K")
         if (currCT != state.temp || colorModeWasReset) {
             bulbC.setColorTemperature(state.temp)
-            log("${app.label}: ${bulbC} CT now changed to: ${state.temp.round()}K")
+            log("${app.label}: ${bulbC} CT now changed to: ${state.temp}K")
         } else {
             log("${app.label}: ${bulbC} Bulb already at proper color temperature")
         }
@@ -922,7 +922,7 @@ def setCTBulb(bulbCT) {
         log("${app.label}: ${bulbCT} Current bulb CT: ${currCT}K")
         if (currCT != state.temp) {
             bulbCT.setColorTemperature(state.temp)
-            log("${app.label}: ${bulbCT} CT now changed to: ${state.temp.round()}K")
+            log("${app.label}: ${bulbCT} CT now changed to: ${state.temp}K")
         } else {
             log("${app.label}: ${bulbCT} Bulb already at proper color temperature")
         }

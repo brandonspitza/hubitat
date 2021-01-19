@@ -338,7 +338,6 @@ def initialize() {
     state.staticPeriod
     
     log("${app.label}: state.on: ${state.on}, " +
-        "state.toggleButton: ${state.toggleButton}, " +
         "state.periodIndexStartColorCTDivergence: ${state.periodIndexStartColorCTDivergence}, ")
     
     if (btnOnOff) {

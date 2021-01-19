@@ -14,7 +14,7 @@ definition(
     name: "Naturalight Room",
     namespace: "naturalight",
     author: "Brandon Spitza",
-    importURL: "",
+    importURL: "https://raw.githubusercontent.com/brandonspitza/hubitat/main/Apps/Naturalight/Naturalight%20Room%20(Child).groovy",
     description: "Configure natural daylight tones indoors with global home settings and optional refinements per room.",
     category: "My Apps",
     iconUrl: "",

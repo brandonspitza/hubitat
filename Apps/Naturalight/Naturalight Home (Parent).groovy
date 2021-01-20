@@ -1,20 +1,33 @@
 /*
 
-    Hubitat Natrualight Home (Parent) v2.0
-    Author: Brandon Spitza
+    Hubitat Natrualight Home (Parent) v2.1
 
+    Author:
+            Brandon Spitza
+
+    Discussion:
+            https://community.hubitat.com/t/release-app-naturalight-home-room-v2-0/62343
+
+
+    Changelog:
+        2.1 (2021-01-20)
+            -Added timezone offset input to timePage which localizes default suggestions for period times
 
     To Do:
-        -Validate user inputs
-        -Collect least "next run time" from children and don't run until it for static periods
+            -BUG: Turning off Alternate Dim State while lights are off turns lights on
+            -BUG: Turning light off with a toggle button and Alternate Dim State active, lights don't turn back on (use Alternate Bright State on as workaround)
+            -Validate user inputs
+            -Collect least "next run time" from children and don't run until it for static periods
 
 */
+
+import java.text.DecimalFormat;
 
 definition(
     name: "Naturalight Home",
     namespace: "naturalight",
     author: "Brandon Spitza",
-    importURL: "https://raw.githubusercontent.com/brandonspitza/hubitat/main/Apps/Naturalight/Naturalight%20Home%20(Parent).groovy",
+    importURL: "",
     description: "Configure natural daylight tones indoors with global home settings and optional refinements per room.",
     category: "My Apps",
     iconUrl: "",
@@ -44,25 +57,7 @@ preferences {
             paragraph ""
         }
     }
-    page(name: "timePage", title: "Period Time Ranges", nextPage: "tempPage", uninstall: true) {
-        section("Each time period fades into the next, so the Warm Morning bulb settings will be 100% active at the Warm Morning start time. As time goes on, " +
-                "the lighting fades to the Cold Morning settings. Eventually the Cold Morning settings are 100% active at the Cold Morning start time. " +
-                "Beginning at Cold Morning period's start time, its settings steadily fade into the Day period's settings, completing at the Day period's start time, " +
-                "where that period's settings arrive at 100% active.") {
-            paragraph "Static periods do not fade; rather, they maintain their settings at 100% throughout. After a static period ends, the next period " +
-                "begins with the previous period's settings and fades into the next period's settings, completing the transition by the start time of the next period."
-            paragraph ""
-            input "strTimeMornWarm", "time", title: "Warm Morning Start:", defaultValue: "2021-01-01T06:00:00.000-0800", required: true
-            input "strTimeMornCold", "time", title: "Cold Morning Start:", defaultValue: "2021-01-01T06:45:00.000-0800", required: true
-            input "strTimeDay", "time", title: "Day (Static) Start:", defaultValue: "2021-01-01T07:30:00.000-0800", required: true
-            input "strTimeAfternoon", "time", title: "Early Afternoon Start:", defaultValue: "2021-01-01T15:30:00.000-0800", required: true
-            input "strTimeAfternoonStatic", "time", title: "Late Afternoon (Static) Start:", defaultValue: "2021-01-01T17:30:00.000-0800", required: true
-            input "strTimeEveningCT", "time", title: "Early Evening Start:", defaultValue: "2021-01-01T18:30:00.000-0800", required: true
-            input "strTimeEveningC", "time", title: "Late Evening Start:", defaultValue: "2021-01-01T19:30:00.000-0800", required: true
-            input "strTimeNight", "time", title: "Night (Static) Start:", defaultValue: "2021-01-01T22:15:00.000-0800", required: true
-            paragraph ""
-        }
-    }
+    page(name: "timePage", title: "Period Time Ranges", nextPage: "tempPage", uninstall: true)
     page(name: "tempPage", title: "Color Temperature Range", nextPage: "levelPage", uninstall: true) {
         section("The warmest white temperature entered below will begin the Warm Morning period, fade to the coldest white temperature to start the Cold Morning period where " +
                 "it will stay set through the Day period. Into the Afternoon periods, white temperature will shift slowly back to the warmest white.") {
@@ -215,6 +210,37 @@ def welcomePage() {
                 "the home. However, the room apps allow global settings to be overridden on a per-setting basis, allowing refinement per room."
             paragraph "Please note that in this version, user-inputted settings are not validated, so take care when entering. For example, your period " +
                 "start times must progress sequentially or lighting adjustments will be erratic."
+            paragraph ""
+        }
+    }
+}
+
+def timePage() {
+    dynamicPage(name: "timePage") {
+        section("Each time period fades into the next, so the Warm Morning bulb settings will be 100% active at the Warm Morning start time. As time goes on, " +
+                "the lighting fades to the Cold Morning settings. Eventually the Cold Morning settings are 100% active at the Cold Morning start time. " +
+                "Beginning at Cold Morning period's start time, its settings steadily fade into the Day period's settings, completing at the Day period's start time, " +
+                "where that period's settings arrive at 100% active.") {
+            paragraph "Static periods do not fade; rather, they maintain their settings at 100% throughout. After a static period ends, the next period " +
+                "begins with the previous period's settings and fades into the next period's settings, completing the transition by the start time of the next period."
+            paragraph ""
+            paragraph ""
+            input "timezoneOffset", "int", title: "Enter your timezone offset to populate default period times (for reference: -5 for EST, -8 for PST)", required: false, submitOnChange: true
+            if (timezoneOffset) {
+                timezoneOffset = Integer.parseInt(timezoneOffset) 
+                DecimalFormat fmt = new DecimalFormat("+00;-00")
+                strTimezoneOffset = fmt.format(timezoneOffset).toString()
+            }
+            paragraph ""
+            paragraph ""
+            input "strTimeMornWarm", "time", title: "Warm Morning Start:", defaultValue: "2021-01-01T06:00:00.000${strTimezoneOffset}00", required: true
+            input "strTimeMornCold", "time", title: "Cold Morning Start:", defaultValue: "2021-01-01T06:45:00.000${strTimezoneOffset}00", required: true
+            input "strTimeDay", "time", title: "Day (Static) Start:", defaultValue: "2021-01-01T07:30:00.000${strTimezoneOffset}00", required: true
+            input "strTimeAfternoon", "time", title: "Early Afternoon Start:", defaultValue: "2021-01-01T15:30:00.000${strTimezoneOffset}00", required: true
+            input "strTimeAfternoonStatic", "time", title: "Late Afternoon (Static) Start:", defaultValue: "2021-01-01T17:30:00.000${strTimezoneOffset}00", required: true
+            input "strTimeEveningCT", "time", title: "Early Evening Start:", defaultValue: "2021-01-01T18:30:00.000${strTimezoneOffset}00", required: true
+            input "strTimeEveningC", "time", title: "Late Evening Start:", defaultValue: "2021-01-01T19:30:00.000${strTimezoneOffset}00", required: true
+            input "strTimeNight", "time", title: "Night (Static) Start:", defaultValue: "2021-01-01T22:15:00.000${strTimezoneOffset}00", required: true
             paragraph ""
         }
     }

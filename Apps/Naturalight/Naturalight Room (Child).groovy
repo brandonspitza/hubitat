@@ -1,12 +1,24 @@
 /*
 
-    Hubitat Natrualight Room (Child) v2.0
-    Author: Brandon Spitza
+    Hubitat Natrualight Room (Child) v2.1
 
+    Author:
+            Brandon Spitza
+
+    Discussion:
+            https://community.hubitat.com/t/release-app-naturalight-home-room-v2-0/62343
+
+
+    Changelog:
+        2.1 (2021-02-03)
+            -Fixed: BUG: Turning off Alternate Dim State while lights are off turns lights on
+            -Fixed: BUG: Turning light off with a toggle button and Alternate Dim State active, lights don't turn back on (use Alternate Bright State on as workaround)
+            -Explicitly defined conditionals to ==true or ==false rather than exists or !exists
+            -Cleaned up some sloppy type-ing
 
     To Do:
-        -Validate user inputs
-        -Motion support
+            -Validate user inputs
+            -Motion support
 
 */
 
@@ -14,7 +26,7 @@ definition(
     name: "Naturalight Room",
     namespace: "naturalight",
     author: "Brandon Spitza",
-    importURL: "https://raw.githubusercontent.com/brandonspitza/hubitat/main/Apps/Naturalight/Naturalight%20Room%20(Child).groovy",
+    importURL: "",
     description: "Configure natural daylight tones indoors with global home settings and optional refinements per room.",
     category: "My Apps",
     iconUrl: "",
@@ -28,18 +40,18 @@ preferences {
         section("Select on/off button. Motion is not currently supported, but can be accommodated by adding a virtual button here and using Rule Machine to press it. " +
                 "For Rule Machine logic, see: https://tinyurl.com/y425chws") {
             paragraph ""
-            input "btnOnOff", "capability.pushableButton", title: "Select Button to Turn Lights On/Off:", multiple: true, required: true
-            input "btnNumOnOffBtnOn", "int", title: "Select Button Press Number to Turn Lights On:", required: true
-            input "btnNumOnOffBtnOff", "int", title: "Select Button Press Number to Turn Lights Off", required: true
+            input name: "btnOnOff", type: "capability.pushableButton", title: "Select Button to Turn Lights On/Off:", multiple: true, required: true
+            input name: "btnNumOnOffBtnOn", type: "number", title: "Select Button Press Number to Turn Lights On:", required: true
+            input name: "btnNumOnOffBtnOff", type: "number", title: "Select Button Press Number to Turn Lights Off:", required: true
             paragraph ""
             paragraph ""
             paragraph "Select bulbs to be controlled. The ideal setup leverages the Hue Bridge Integration app where Hue Zones and Groups are synced from the Hue Bridge " + 
                 "(individual bulbs do not need to be synced from the bridge in this scenario). A room would consist of a single Hue Zone containing both a Hue " +
                 "Group of color bulbs and a Hue Group of color-temperature bulbs. The Room will still work with any combination of Zones, Groups, Color or CT bulbs."
             paragraph ""
-            input "hueZones", "capability.colorTemperature", title: "Select Hue Zones:", multiple: true, required: false
-            input "bulbsCT", "capability.colorTemperature", title: "Select CT Bulbs:", multiple: true, required: false
-            input "bulbsC", "capability.colorControl", title: "Select Color Bulbs:", multiple: true, required: false
+            input name: "hueZones", type: "capability.colorTemperature", title: "Select Hue Zones:", multiple: true, required: false
+            input name: "bulbsCT", type: "capability.colorTemperature", title: "Select CT Bulbs:", multiple: true, required: false
+            input name: "bulbsC", type: "capability.colorControl", title: "Select Color Bulbs:", multiple: true, required: false
             paragraph ""
             paragraph ""
         }
@@ -56,8 +68,8 @@ preferences {
 def roomPage() {
     dynamicPage(name: "roomPage") {
         section() {
-            input "appButtonPause", "button", title: "Un/Pause"
-            if (state.paused) { paragraph "***APP CURRENTLY PAUSED***" }
+            input name: "appButtonPause", type: "button", title: "Un/Pause"
+            if (atomicState.paused == true) { paragraph "***APP CURRENTLY PAUSED***" }
             paragraph ""
         }
         section("Room Name:") {
@@ -82,35 +94,35 @@ def timePage() {
         section("Leave any or all of these fields blank to default to global settings from Home (parent) app. An input overrides that specific Home parameter while " +
                 "others will still default. Home setting are displayed below the input line for reference.") {
             paragraph ""
-            input "strTimeMornWarm", "time", title: "Warm Morning Start:", required: false
+            input name: "strTimeMornWarm", type: "time", title: "Warm Morning Start:", required: false
             paragraph "Home setting: ${parent.getTimeMornWarm().substring(11,16)}"
             paragraph ""
             paragraph ""
-            input "strTimeMornCold", "time", title: "Cold Morning Start:", required: false
+            input name: "strTimeMornCold", type: "time", title: "Cold Morning Start:", required: false
             paragraph "Home setting: ${parent.getTimeMornCold().substring(11,16)}"
             paragraph ""
             paragraph ""
-            input "strTimeDay", "time", title: "Day (Static) Start:", required: false
+            input name: "strTimeDay", type: "time", title: "Day (Static) Start:", required: false
             paragraph "Home setting: ${parent.getTimeDay().substring(11,16)}"
             paragraph ""
             paragraph ""
-            input "strTimeAfternoon", "time", title: "Afternoon Start:", required: false
+            input name: "strTimeAfternoon", type: "time", title: "Afternoon Start:", required: false
             paragraph "Home setting: ${parent.getTimeAfternoon().substring(11,16)}"
             paragraph ""
             paragraph ""
-            input "strTimeAfternoonStatic", "time", title: "Afternoon (Static) Start:", required: false
+            input name: "strTimeAfternoonStatic", type: "time", title: "Afternoon (Static) Start:", required: false
             paragraph "Home setting: ${parent.getTimeAfternoonStatic().substring(11,16)}"
             paragraph ""
             paragraph ""
-            input "strTimeEveningCT", "time", title: "Early Evening Start:", required: false
+            input name: "strTimeEveningCT", type: "time", title: "Early Evening Start:", required: false
             paragraph "Home setting: ${parent.getTimeEveningCT().substring(11,16)}"
             paragraph ""
             paragraph ""
-            input "strTimeEveningC", "time", title: "Late Evening Start:", required: false
+            input name: "strTimeEveningC", type: "time", title: "Late Evening Start:", required: false
             paragraph "Home setting: ${parent.getTimeEveningC().substring(11,16)}"
             paragraph ""
             paragraph ""
-            input "strTimeNight", "time", title: "Night (Static) Start:", required: false
+            input name: "strTimeNight", type: "time", title: "Night (Static) Start:", required: false
             paragraph "Home setting: ${parent.getTimeNight().substring(11,16)}"
             paragraph ""
             paragraph ""
@@ -123,11 +135,11 @@ def tempPage() {
         section("Leave any or all of these fields blank to default to global settings from Home (parent) app. An input overrides that specific Home parameter while " +
                 "others will still default. Home setting are displayed below the input line for reference.") {
             paragraph ""
-            input "tempWarmest", "int", title: "Warmest CT:", required: false
+            input name: "tempWarmest", type: "number", title: "Warmest CT:", required: false
             paragraph "Home setting: ${parent.getTempWarmest()}"
             paragraph ""
             paragraph ""
-            input "tempColdest", "int", title: "Coldest CT:", required: false
+            input name: "tempColdest", type: "number", title: "Coldest CT:", required: false
             paragraph "Home setting: ${parent.getTempColdest()}"
             paragraph ""
             paragraph ""
@@ -140,52 +152,52 @@ def levelPage() {
         section("Leave any or all of these fields blank to default to global settings from Home (parent) app. An input overrides that specific Home parameter while " +
                 "others will still default. Home setting are displayed below the input line for reference.") {
             paragraph ""
-            input "lvlInitWarmMorn", "int", title: "Warm Morning Period, Initial:", required: false
+            input name: "lvlInitWarmMorn", type: "number", title: "Warm Morning Period, Initial:", required: false
             paragraph "Home setting: ${parent.getLvlInitWarmMorn()}"
             paragraph ""
             paragraph ""
-            input "lvlGoalWarmMorn", "int", title: "Warm Morning Period, Goal:", required: false
+            input name: "lvlGoalWarmMorn", type: "number", title: "Warm Morning Period, Goal:", required: false
             paragraph "Home setting: ${parent.getLvlGoalWarmMorn()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "lvlGoalColdMorn", "int", title: "Cold Morning Period, Goal:", required: false
+            input name: "lvlGoalColdMorn", type: "number", title: "Cold Morning Period, Goal:", required: false
             paragraph "Home setting: ${parent.getLvlGoalColdMorn()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "lvlGoalDay", "int", title: "Day Period, Goal:", required: false
+            input name: "lvlGoalDay", type: "number", title: "Day Period, Goal:", required: false
             paragraph "Home setting: ${parent.getLvlGoalDay()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "lvlGoalAfternoon", "int", title: "Afternoon Period, Goal:", required: false
+            input name: "lvlGoalAfternoon", type: "number", title: "Afternoon Period, Goal:", required: false
             paragraph "Home setting: ${parent.getLvlGoalAfternoon()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "lvlCTGoalEveningCT", "int", title: "Early Evening Period, CT Bulb Goal:", required: false
+            input name: "lvlCTGoalEveningCT", type: "number", title: "Early Evening Period, CT Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getLvlCTGoalEveningCT()}"
             paragraph ""
             paragraph ""
-            input "lvlCGoalEveningCT", "int", title: "Early Evening Period, Color Bulb Goal:", required: false
+            input name: "lvlCGoalEveningCT", type: "number", title: "Early Evening Period, Color Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getLvlCGoalEveningCT()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "lvlCGoalEveningC", "int", title: "Late Evening Period, Color Bulb Goal:", required: false
+            input name: "lvlCGoalEveningC", type: "number", title: "Late Evening Period, Color Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getLvlCGoalEveningC()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "lvlCGoalNight", "int", title: "Night Period, Color Bulb Goal:", required: false
+            input name: "lvlCGoalNight", type: "number", title: "Night Period, Color Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getLvlCGoalNight()}"
             paragraph ""
             paragraph ""
@@ -198,19 +210,19 @@ def huePage() {
         section("Leave any or all of these fields blank to default to global settings from Home (parent) app. An input overrides that specific Home parameter while " +
                 "others will still default. Home setting are displayed below the input line for reference.") {
             paragraph ""
-            input "hueInitEveningCT", "int", title: "Early Evening Period, Color Bulb Initial:", required: false
+            input name: "hueInitEveningCT", type: "number", title: "Early Evening Period, Color Bulb Initial:", required: false
             paragraph "Home setting: ${parent.getHueInitEveningCT()}"
             paragraph ""
             paragraph ""
-            input "hueGoalEveningCT", "int", title: "Early Evening Period, Color Bulb Goal:", required: false
+            input name: "hueGoalEveningCT", type: "number", title: "Early Evening Period, Color Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getHueGoalEveningCT()}"
             paragraph ""
             paragraph ""
-            input "hueGoalEveningC", "int", title: "Late Evening Period, Color Bulb Goal:", required: false
+            input name: "hueGoalEveningC", type: "number", title: "Late Evening Period, Color Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getHueGoalEveningC()}"
             paragraph ""
             paragraph ""
-            input "hueGoalNight", "int", title: "Night Period, Color Bulb Hue Goal:", required: false
+            input name: "hueGoalNight", type: "number", title: "Night Period, Color Bulb Hue Goal:", required: false
             paragraph "Home setting: ${parent.getHueGoalNight()}"
             paragraph ""
             paragraph ""
@@ -223,23 +235,23 @@ def satPage() {
         section("Leave any or all of these fields blank to default to global settings from Home (parent) app. An input overrides that specific Home parameter while " +
                 "others will still default. Home setting are displayed below the input line for reference.") {
             paragraph ""
-            input "satInitEveningCT", "int", title: "Early Evening Period, Color Bulb Initial:", required: false
+            input name: "satInitEveningCT", type: "number", title: "Early Evening Period, Color Bulb Initial:", required: false
             paragraph "Home setting: ${parent.getSatInitEveningCT()}"
             paragraph ""
             paragraph ""
-            input "satGoalEveningCT", "int", title: "Early Evening Period, Color Bulb Goal:", required: false
+            input name: "satGoalEveningCT", type: "number", title: "Early Evening Period, Color Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getSatGoalEveningCT()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "satGoalEveningC", "int", title: "Late Evening Period, Color Bulb Saturation Goal:", required: false
+            input name: "satGoalEveningC", type: "number", title: "Late Evening Period, Color Bulb Saturation Goal:", required: false
             paragraph "Home setting: ${parent.getSatGoalEveningC()}"
             paragraph ""
             paragraph ""
             paragraph ""
             paragraph ""
-            input "satGoalNight", "int", title: "Night Period, Color Bulb Goal:", required: false
+            input name: "satGoalNight", type: "number", title: "Night Period, Color Bulb Goal:", required: false
             paragraph "Home setting: ${parent.getSatGoalNight()}"
             paragraph ""
             paragraph ""
@@ -254,20 +266,20 @@ def altBrightPage() {
             paragraph "If using the same button as this room's on/off button, you can save time by leaving the button field below blank and just fill out one of the two Button Number fields."
             paragraph "Consider a virtual button on a dashboard for this if you are out of physical buttons."
             paragraph ""
-            input "btnAltStateBright", "capability.holdableButton", title: "Select Button to Activate Alternate Bright Lighting:", multiple: true, required: false
+            input name: "btnAltStateBright", type: "capability.holdableButton", title: "Select Button to Activate Alternate Bright Lighting:", multiple: true, required: false
             paragraph ""
-            input "btnPressNumAltStateBright", "int", title: "Select Button Number to PRESS to Activate Alternate Bright Lighting:", required: false
-            input "btnHoldNumAltStateBright", "int", title: "Select Button Number to HOLD to Activate Alternate Bright Lighting:", required: false
+            input name: "btnPressNumAltStateBright", type: "number", title: "Select Button Number to PRESS to Activate Alternate Bright Lighting:", required: false
+            input name: "btnHoldNumAltStateBright", type: "number", title: "Select Button Number to HOLD to Activate Alternate Bright Lighting:", required: false
             paragraph ""
             paragraph ""
             paragraph "Leave one or both of the fields below blank to default to global settings from Home (parent) app. An input overrides that specific Home parameter while " +
                 "others will still default. Home setting are displayed below the input line for reference."
             paragraph ""
-            input "lvlAltStateBright", "int", title: "Alternate Bright Lighting Level:", required: false
+            input name: "lvlAltStateBright", type: "number", title: "Alternate Bright Lighting Level:", required: false
             paragraph "Home setting: ${parent.getLvlAltStateBright()}"
             paragraph ""
             paragraph ""
-            input "tempAltStateBright", "int", title: "Alternate Bright Lighting Temperature:", required: false
+            input name: "tempAltStateBright", type: "number", title: "Alternate Bright Lighting Temperature:", required: false
             paragraph "Home setting: ${parent.getTempAltStateBright()}"
             paragraph ""
             paragraph ""
@@ -282,20 +294,20 @@ def altDimPage() {
             paragraph "If using the same button as this room's on/off button, you can save time by leaving the button field below blank and just fill out one of the two Button Number fields."
             paragraph "Consider a virtual button on a dashboard for this if you are out of physical buttons."
             paragraph ""
-            input "btnAltStateDim", "capability.holdableButton", title: "Select Button to Activate Alternate Dim Lighting:", multiple: true, required: false
+            input name: "btnAltStateDim", type: "capability.holdableButton", title: "Select Button to Activate Alternate Dim Lighting:", multiple: true, required: false
             paragraph ""
-            input "btnPressNumAltStateDim", "int", title: "Select Button Number to PRESS to Activate Alternate Dim Lighting:", required: false
-            input "btnHoldNumAltStateDim", "int", title: "Select Button Number to HOLD to Activate Alternate Dim Lighting:", required: false
+            input name: "btnPressNumAltStateDim", type: "number", title: "Select Button Number to PRESS to Activate Alternate Dim Lighting:", required: false
+            input name: "btnHoldNumAltStateDim", type: "number", title: "Select Button Number to HOLD to Activate Alternate Dim Lighting:", required: false
             paragraph ""
             paragraph ""
             paragraph "Leave one or both of the fields below blank to default to global settings from Home (parent) app. An input overrides that specific Home parameter while " +
                 "others will still default. Home setting are displayed below the input line for reference."
             paragraph ""
-            input "lvlAltStateDim", "int", title: "Alternate Dim Lighting Level:", required: false
+            input name: "lvlAltStateDim", type: "number", title: "Alternate Dim Lighting Level:", required: false
             paragraph "Home setting: ${parent.getLvlAltStateDim()}"
             paragraph ""
             paragraph ""
-            input "tempAltStateDim", "int", title: "Alternate Dim Lighting Temperature:", required: false
+            input name: "tempAltStateDim", type: "number", title: "Alternate Dim Lighting Temperature:", required: false
             paragraph "Home setting: ${parent.getTempAltStateDim()}"
             paragraph ""
             paragraph ""
@@ -323,22 +335,23 @@ def updated() {
 def initialize() {
     log("${app.label}: Initializing app")
     
-    state.paused = false
-    state.on = isOn()
-    state.altStateBright = false
-    state.altStateDim = false
-    state.period
-    state.periodIndex
-    state.periodIndexStartColorCTDivergence = 6
-    state.lvlCT
-    state.temp
-    state.lvlC
-    state.hue
-    state.sat
-    state.staticPeriod
+
+    atomicState.paused = false
+    atomicState.on = isOn()
+    atomicState.altStateBright = false
+    atomicState.altStateDim = false
+    atomicState.period
+    atomicState.periodIndex
+    atomicState.periodIndexStartColorCTDivergence = 6
+    atomicState.lvlCT
+    atomicState.temp
+    atomicState.lvlC
+    atomicState.hue
+    atomicState.sat
+    atomicState.staticPeriod
     
-    log("${app.label}: state.on: ${state.on}, " +
-        "state.periodIndexStartColorCTDivergence: ${state.periodIndexStartColorCTDivergence}, ")
+    log("${app.label}: atomicState.on: ${atomicState.on}, " +
+        "atomicState.periodIndexStartColorCTDivergence: ${atomicState.periodIndexStartColorCTDivergence}, ")
     
     if (btnOnOff) {
         if (btnNumOnOffBtnOn == btnNumOnOffBtnOff) {
@@ -409,26 +422,26 @@ def appButtonHandler(btn) {
 }
 
 def toggleAppPause() {
-    if (!state.paused) {
+    if (atomicState.paused == false) {
         log("${app.label} app paused")
-        state.paused = true
+        atomicState.paused = true
     } else {
         log("${app.label} app unpaused")
-        state.paused = false
+        atomicState.paused = false
     }
 }
 
 def onBtnHandler(evt) {
     log("${app.label}: On Button Press - Turning On Bulbs")
+        
+    atomicState.on = true
     
-    state.on = true
-    
-    if (state.periodIndex <= state.periodIndexStartColorCTDivergence || (state.altStateBright)) {
+    if (atomicState.periodIndex <= atomicState.periodIndexStartColorCTDivergence || (atomicState.altStateBright)) {
         if (hueZones) {
             for (hueZone in hueZones) {
                 hueZone.on()
             }
-            driver(new Date())    
+            driver(new Date())
             return
         }
         for (bulbCT in bulbsCT) {
@@ -438,21 +451,22 @@ def onBtnHandler(evt) {
     for (bulbC in bulbsC) {
         bulbC.on()
     }
-    driver(new Date())    
+    driver(new Date())
 }
 
 def offBtnHandler(evt) {
     log("${app.label}: Off Button Press - Turning Off Bulbs")
     
-    state.on = false
-    state.altStateDim = false
-    state.altStateBright = false
+    atomicState.on = false
+    atomicState.altStateDim = false
+    atomicState.altStateBright = false
     
-    if (state.periodIndex <= state.periodIndexStartColorCTDivergence) {
+    
+    if (atomicState.periodIndex <= atomicState.periodIndexStartColorCTDivergence) {
         if (hueZones) {
             for (hueZone in hueZones) {
                 hueZone.off()
-            }
+            }            
             return
         }
     }
@@ -461,46 +475,43 @@ def offBtnHandler(evt) {
     }
     for (bulbC in bulbsC) {
         bulbC.off()
-    }
-    
+    }    
 }
 
-def togglebtnOnOffHandler(evt) {
-    if (!state.on) {
+def togglebtnOnOffHandler(evt) {    
+    if (atomicState.on == false) {
         log("${app.label}: Toggle Button Press. Bulbs currently off. Turning On.")
         onBtnHandler(evt)
-    }
-    else if (state.on) {
+    } else if (atomicState.on == true) {
         log("${app.label}: Toggle Button Press. Bulbs currently on. Turning Off.")
         offBtnHandler(evt)
     }
 }
 
-def btnAltStateBrightHandler(evt) {
+def btnAltStateBrightHandler(evt) {    
     log("${app.label}: Alternate Bright Lighting button pressed")
-    if (!state.altStateBright) {
+    if (atomicState.altStateBright == false) {
         log("${app.label}: Alternate Bright Lighting activated")
-        state.altStateBright = true
-        state.altStateDim = false
+        atomicState.altStateBright = true
+        atomicState.altStateDim = false
         onBtnHandler()
-    }
-    else if (state.altStateBright) {
+    } else if (atomicState.altStateBright == true) {
         log("${app.label}: Alternate Bright Lighting deactivated")
-        state.altStateBright = false
+        atomicState.altStateBright = false
         driver(new Date())
     }
 }
 
 def btnAltStateDimHandler(evt) {
+    
     log("${app.label}: Alternate Dim Lighting button pressed")
-    if (!state.altStateDim) {
+    if (atomicState.altStateDim == false) {
         log("${app.label}: Alternate Dim Lighting activated")
-        state.altStateDim = true
-        state.altStateBright = false
-    }
-    else if (state.altStateDim) {
+        atomicState.altStateDim = true
+        atomicState.altStateBright = false
+    } else if (atomicState.altStateDim == true) {
         log("${app.label}: Alternate Dim Lighting deactivated")
-        state.altStateDim = false
+        atomicState.altStateDim = false
     }
     driver(new Date())
 }
@@ -509,11 +520,11 @@ def btnAltStateDimHandler(evt) {
 
 
 def driver(now) {
-    if (!state.on) {
+    if (atomicState.on == false) {
         log("${app.label}: lights are off. No update needed.")
         return
     }
-    if (state.paused) {
+    if (atomicState.paused == true) {
         log("${app.label} app paused")
         return
     }
@@ -602,6 +613,32 @@ def setPeriodBulbValues() {
     if (satGoalEveningCT == null) { satGoalEveningCT = parent.getSatGoalEveningCT() }
     if (satGoalEveningC == null) { satGoalEveningC = parent.getSatGoalEveningC() }
     if (satGoalNight == null) { satGoalNight = parent.getSatGoalNight() }
+    
+    /*
+    if (lvlAltStateBright == null) { lvlAltStateBright = Integer.parseInt(parent.getLvlAltStateBright()) }
+    if (tempAltStateBright == null) { tempAltStateBright = Integer.parseInt(parent.getTempAltStateBright()) }
+    if (lvlAltStateDim == null) { lvlAltStateDim = Integer.parseInt(parent.getLvlAltStateDim()) }
+    if (tempAltStateDim == null) { tempAltStateDim = Integer.parseInt(parent.getTempAltStateDim()) }
+    if (tempColdest == null) { tempColdest = Integer.parseInt(parent.getTempColdest()) }
+    if (tempWarmest == null) { tempWarmest = Integer.parseInt(parent.getTempWarmest()) }
+    if (lvlInitWarmMorn == null) { lvlInitWarmMorn = Integer.parseInt(parent.getLvlInitWarmMorn()) }
+    if (lvlGoalWarmMorn == null) { lvlGoalWarmMorn = Integer.parseInt(parent.getLvlGoalWarmMorn()) }
+    if (lvlGoalColdMorn == null) { lvlGoalColdMorn = Integer.parseInt(parent.getLvlGoalColdMorn()) }
+    if (lvlGoalDay == null) { lvlGoalDay = Integer.parseInt(parent.getLvlGoalDay()) }
+    if (lvlGoalAfternoon == null) { lvlGoalAfternoon = Integer.parseInt(parent.getLvlGoalAfternoon()) }
+    if (lvlCTGoalEveningCT == null) { lvlCTGoalEveningCT = Integer.parseInt(parent.getLvlCTGoalEveningCT()) }
+    if (lvlCGoalEveningCT == null) { lvlCGoalEveningCT = Integer.parseInt(parent.getLvlCGoalEveningCT()) }
+    if (lvlCGoalEveningC == null) { lvlCGoalEveningC = Integer.parseInt(parent.getLvlCGoalEveningC()) }
+    if (lvlCGoalNight == null) { lvlCGoalNight = Integer.parseInt(parent.getLvlCGoalNight()) }
+    if (hueInitEveningCT == null) { hueInitEveningCT = Integer.parseInt(parent.getHueInitEveningCT()) }
+    if (hueGoalEveningCT == null) { hueGoalEveningCT = Integer.parseInt(parent.getHueGoalEveningCT()) }
+    if (hueGoalEveningC == null) { hueGoalEveningC = Integer.parseInt(parent.getHueGoalEveningC()) }
+    if (hueGoalNight == null) { hueGoalNight = Integer.parseInt(parent.getHueGoalNight()) }
+    if (satInitEveningCT == null) { satInitEveningCT = Integer.parseInt(parent.getSatInitEveningCT()) }
+    if (satGoalEveningCT == null) { satGoalEveningCT = Integer.parseInt(parent.getSatGoalEveningCT()) }
+    if (satGoalEveningC == null) { satGoalEveningC = Integer.parseInt(parent.getSatGoalEveningC()) }
+    if (satGoalNight == null) { satGoalNight = Integer.parseInt(parent.getSatGoalNight()) }
+    */
 }
 
 def setBulbStates(now) {    
@@ -612,126 +649,126 @@ def setBulbStates(now) {
     def lvlCInit, lvlCGoal, hueInit, hueGoal, satInit, satGoal
     
 
-    if (state.altStateBright) {
+    if (atomicState.altStateBright == true) {
         log("${app.label}: Alternate Bright Lighting active. Setting CT Bulb level to ${lvlAltStateBright}%")
-        state.lvlCT = Integer.parseInt(lvlAltStateBright)
+        atomicState.lvlCT = lvlAltStateBright
         
         log("${app.label}: Alternate Bright Lighting active. Setting Bulb temperature to ${tempAltStateBright}K")
-        state.temp = Integer.parseInt(tempAltStateBright)
+        atomicState.temp = tempAltStateBright
         
         return
     }
     
-    //state.altStateDim processed last
+    //atomicState.altStateDim processed last
     
-    if (state.period == "WarmMorning") {
+    if (atomicState.period == "WarmMorning") {
         
-        lvlCTInit = Float.parseFloat(lvlInitWarmMorn)
-        lvlCTGoal = Float.parseFloat(lvlGoalWarmMorn)
-        state.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
+        lvlCTInit = lvlInitWarmMorn
+        lvlCTGoal = lvlGoalWarmMorn
+        atomicState.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
         
-        tempInit = Float.parseFloat(tempWarmest)
-        tempGoal = Float.parseFloat(tempColdest)
-        state.temp = getWeightedStateVal(tempInit, tempGoal, percentThroughPeriod)
+        tempInit = tempWarmest
+        tempGoal = tempColdest
+        atomicState.temp = getWeightedStateVal(tempInit, tempGoal, percentThroughPeriod)
         
-    } else if (state.period == "ColdMorning") {
+    } else if (atomicState.period == "ColdMorning") {
         
-        lvlCTInit = Float.parseFloat(lvlGoalWarmMorn)
-        lvlCTGoal = Float.parseFloat(lvlGoalColdMorn)
-        state.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
+        lvlCTInit = lvlGoalWarmMorn
+        lvlCTGoal = lvlGoalColdMorn
+        atomicState.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
         
-        tempInit = Float.parseFloat(tempColdest)
-        tempGoal = Float.parseFloat(tempColdest)
-        state.temp = getWeightedStateVal(tempInit, tempGoal, percentThroughPeriod)
+        tempInit = tempColdest
+        tempGoal = tempColdest
+        atomicState.temp = getWeightedStateVal(tempInit, tempGoal, percentThroughPeriod)
         
-    } else if (state.period == "Day") {
+    } else if (atomicState.period == "Day") {
 
-        lvlCTInit = Float.parseFloat(lvlGoalColdMorn)
-        lvlCTGoal = Float.parseFloat(lvlGoalDay)
-        state.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
+        lvlCTInit = lvlGoalColdMorn
+        lvlCTGoal = lvlGoalDay
+        atomicState.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
         
-        state.temp = Float.parseFloat(tempColdest)
+        atomicState.temp = tempColdest
         
-    } else if (state.period == "Afternoon") {
+    } else if (atomicState.period == "Afternoon") {
         
-        lvlCTInit = Float.parseFloat(lvlGoalDay)
-        lvlCTGoal = Float.parseFloat(lvlGoalAfternoon)
-        state.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
+        lvlCTInit = lvlGoalDay
+        lvlCTGoal = lvlGoalAfternoon
+        atomicState.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
         
-        tempInit = Float.parseFloat(tempColdest)
-        tempGoal = Float.parseFloat(tempWarmest)
-        state.temp = getWeightedStateVal(tempInit, tempGoal, percentThroughPeriod)
+        tempInit = tempColdest
+        tempGoal = tempWarmest
+        atomicState.temp = getWeightedStateVal(tempInit, tempGoal, percentThroughPeriod)
         
-    } else if (state.period == "AfternoonStatic") {
+    } else if (atomicState.period == "AfternoonStatic") {
         
-        state.lvlCT = Float.parseFloat(lvlGoalAfternoon)
+        atomicState.lvlCT = lvlGoalAfternoon
         
-        state.temp = Float.parseFloat(tempWarmest)
+        atomicState.temp = tempWarmest
         
-    } else if (state.period == "EveningCT") {
+    } else if (atomicState.period == "EveningCT") {
         
-        lvlCTInit = Float.parseFloat(lvlGoalAfternoon)
-        lvlCTGoal = Float.parseFloat(lvlCTGoalEveningCT)
-        state.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
+        lvlCTInit = lvlGoalAfternoon
+        lvlCTGoal = lvlCTGoalEveningCT
+        atomicState.lvlCT = getWeightedStateVal(lvlCTInit, lvlCTGoal, percentThroughPeriod)
         
-        state.temp = Float.parseFloat(tempWarmest)
+        atomicState.temp = tempWarmest
         
-        lvlCInit = Float.parseFloat(lvlGoalAfternoon)
-        lvlCGoal = Float.parseFloat(lvlCGoalEveningCT)
-        state.lvlC = getWeightedStateVal(lvlCInit, lvlCGoal, percentThroughPeriod)
+        lvlCInit = lvlGoalAfternoon
+        lvlCGoal = lvlCGoalEveningCT
+        atomicState.lvlC = getWeightedStateVal(lvlCInit, lvlCGoal, percentThroughPeriod)
         
-        hueInit = Float.parseFloat(hueInitEveningCT)
-        hueGoal = Float.parseFloat(hueGoalEveningCT)
-        state.hue = getWeightedStateVal(hueInit, hueGoal, percentThroughPeriod)
+        hueInit = hueInitEveningCT
+        hueGoal = hueGoalEveningCT
+        atomicState.hue = getWeightedStateVal(hueInit, hueGoal, percentThroughPeriod)
         
-        satInit = Float.parseFloat(satInitEveningCT)
-        satGoal = Float.parseFloat(satGoalEveningCT)
-        state.sat = getWeightedStateVal(satInit, satGoal, percentThroughPeriod)
+        satInit = satInitEveningCT
+        satGoal = satGoalEveningCT
+        atomicState.sat = getWeightedStateVal(satInit, satGoal, percentThroughPeriod)
         
-    } else if (state.period == "EveningC") {
+    } else if (atomicState.period == "EveningC") {
         
-        lvlCInit = Float.parseFloat(lvlCGoalEveningCT)
-        lvlCGoal = Float.parseFloat(lvlCGoalEveningC)
-        state.lvlC = getWeightedStateVal(lvlCInit, lvlCGoal, percentThroughPeriod)
+        lvlCInit = lvlCGoalEveningCT
+        lvlCGoal = lvlCGoalEveningC
+        atomicState.lvlC = getWeightedStateVal(lvlCInit, lvlCGoal, percentThroughPeriod)
         
-        hueInit = Float.parseFloat(hueInitEveningCT)
-        hueGoal = Float.parseFloat(hueGoalEveningC)
-        state.hue = getWeightedStateVal(hueInit, hueGoal, percentThroughPeriod)
+        hueInit = hueInitEveningCT
+        hueGoal = hueGoalEveningC
+        atomicState.hue = getWeightedStateVal(hueInit, hueGoal, percentThroughPeriod)
         
-        satInit = Float.parseFloat(satInitEveningCT)
-        satGoal = Float.parseFloat(satGoalEveningC)
-        state.sat = getWeightedStateVal(satInit, satGoal, percentThroughPeriod)
+        satInit = satInitEveningCT
+        satGoal = satGoalEveningC
+        atomicState.sat = getWeightedStateVal(satInit, satGoal, percentThroughPeriod)
         
-    } else if (state.period == "Night") {
+    } else if (atomicState.period == "Night") {
         
-        state.lvlC = Float.parseFloat(lvlCGoalNight)
+        atomicState.lvlC = lvlCGoalNight
         
-        state.hue = Float.parseFloat(hueGoalNight)
+        atomicState.hue = hueGoalNight
         
-        state.sat = Float.parseFloat(satGoalNight)
+        atomicState.sat = satGoalNight
         
     }
     
-    if (state.altStateDim == true) {
-        if (state.periodIndex <= state.periodIndexStartColorCTDivergence) {
-            if (state.lvlCT > Integer.parseInt(lvlAltStateDim)) {
+    if (atomicState.altStateDim == true) {
+        if (atomicState.periodIndex <= atomicState.periodIndexStartColorCTDivergence) {
+            if (atomicState.lvlCT > lvlAltStateDim) {
                 log("${app.label}: Alternate Dim Lighting active. Setting CT Bulb level to ${lvlAltStateDim}%.")
-                state.lvlCT = Integer.parseInt(lvlAltStateDim)
+                atomicState.lvlCT = lvlAltStateDim
             }
             log("${app.label}: Alternate Dim Lighting active. Setting Bulb temperature to ${tempAltStateDim}K")
-            state.temp = Integer.parseInt(tempAltStateDim)
+            atomicState.temp = tempAltStateDim
         }
-        if (state.periodIndex >= state.periodIndexStartColorCTDivergence) {
+        if (atomicState.periodIndex >= atomicState.periodIndexStartColorCTDivergence) {
             log("${app.label}: Alternate Dim Lighting active. Setting Color Bulb level to ${lvlAltStateDim}%.")
-            state.lvlC = Integer.parseInt(lvlAltStateDim)
+            atomicState.lvlC = lvlAltStateDim
         }
     }
     
-    log("${app.label}: state.lvlCT: ${state.lvlCT}, state.temp: ${state.temp}, state.lvlC: ${state.lvlC}, state.hue: ${state.hue}, state.sat: ${state.sat}, ")
+    log("${app.label}: atomicState.lvlCT: ${atomicState.lvlCT}, atomicState.temp: ${atomicState.temp}, atomicState.lvlC: ${atomicState.lvlC}, atomicState.hue: ${atomicState.hue}, atomicState.sat: ${atomicState.sat}, ")
 }
 
 def getWeightedStateVal(init, goal, percentThroughPeriod) {
-    return ( (float)(init + (goal - init) * percentThroughPeriod) ).round()
+    return ((init + ((float)goal - init)) * percentThroughPeriod).round()
 }
 
 def setPeriod(now) {
@@ -739,70 +776,70 @@ def setPeriod(now) {
     def periodTimeStart, periodTimeEnd
     
     if (timeOfDayIsBetween(timeMornWarm, timeMornCold, now)) {
-        state.period = "WarmMorning"
-        state.periodIndex = 1
-        state.staticPeriod = false
+        atomicState.period = "WarmMorning"
+        atomicState.periodIndex = 1
+        atomicState.staticPeriod = false
         periodTimeStart = timeMornWarm
         periodTimeEnd = timeMornCold
     } else if (timeOfDayIsBetween(timeMornCold, timeDay, now)) {
-        state.period = "ColdMorning"
-        state.periodIndex = 2
-        state.staticPeriod = false
+        atomicState.period = "ColdMorning"
+        atomicState.periodIndex = 2
+        atomicState.staticPeriod = false
         periodTimeStart = timeMornCold
         periodTimeEnd = timeDay
     } else if (timeOfDayIsBetween(timeDay, timeAfternoon, now)) {
-        state.period = "Day"
-        state.periodIndex = 3
-        state.staticPeriod = true
+        atomicState.period = "Day"
+        atomicState.periodIndex = 3
+        atomicState.staticPeriod = true
         periodTimeStart = timeDay
         periodTimeEnd = timeAfternoon
     } else if (timeOfDayIsBetween(timeAfternoon, timeAfternoonStatic, now)) {
-        state.period = "Afternoon"
-        state.periodIndex = 4
-        state.staticPeriod = false
+        atomicState.period = "Afternoon"
+        atomicState.periodIndex = 4
+        atomicState.staticPeriod = false
         periodTimeStart = timeAfternoon
         periodTimeEnd = timeAfternoonStatic
     } else if (timeOfDayIsBetween(timeAfternoonStatic, timeEveningCT, now)) {
-        state.period = "AfternoonStatic"
-        state.periodIndex = 5
-        state.staticPeriod = true
+        atomicState.period = "AfternoonStatic"
+        atomicState.periodIndex = 5
+        atomicState.staticPeriod = true
         periodTimeStart = timeAfternoonStatic
         periodTimeEnd = timeEveningCT
     } else if (timeOfDayIsBetween(timeEveningCT, timeEveningC, now)) {
-        state.period = "EveningCT"
-        state.periodIndex = 6
-        state.staticPeriod = false
+        atomicState.period = "EveningCT"
+        atomicState.periodIndex = 6
+        atomicState.staticPeriod = false
         periodTimeStart = timeEveningCT
         periodTimeEnd = timeEveningC
     } else if (timeOfDayIsBetween(timeEveningC, timeNight, now)) {
-        state.period = "EveningC"
-        state.periodIndex = 7
-        state.staticPeriod = false
+        atomicState.period = "EveningC"
+        atomicState.periodIndex = 7
+        atomicState.staticPeriod = false
         periodTimeStart = timeEveningC
         periodTimeEnd = timeNight
     } else if (timeOfDayIsBetween(timeNight, timeMornWarm.plus(1), now)) {
-        state.period = "Night"
-        state.periodIndex = 8
-        state.staticPeriod = true
+        atomicState.period = "Night"
+        atomicState.periodIndex = 8
+        atomicState.staticPeriod = true
         periodTimeStart = timeNight
         periodTimeEnd = timeMornWarm.plus(1)
     } else if (timeOfDayIsBetween(timeNight.minus(1), timeMornWarm, now)) {
-        state.period = "Night"
-        state.periodIndex = 9
-        state.staticPeriod = true
+        atomicState.period = "Night"
+        atomicState.periodIndex = 9
+        atomicState.staticPeriod = true
         periodTimeStart = timeNight.minus(1)
         periodTimeEnd = timeMornWarm
     }
 
-    log("${app.label}: Period ${state.period}, beginning ${periodTimeStart}, ending ${periodTimeEnd} based on time of ${now}. Static period: ${state.staticPeriod}")
+    log("${app.label}: Period ${atomicState.period}, beginning ${periodTimeStart}, ending ${periodTimeEnd} based on time of ${now}. Static period: ${atomicState.staticPeriod}")
     
     return getPercentThroughPeriod(periodTimeStart, periodTimeEnd, now)
 }
 
 def getPercentThroughPeriod(periodTimeStart, periodTimeEnd, now) {
-    def periodDuration = ((float)(periodTimeEnd.time - periodTimeStart.time) / 1000 / 60).round()
-    def durationPassed = ((float)(now.time - periodTimeStart.time) / 1000 / 60).round()
-    def percentThroughPeriod = ((float)(durationPassed / periodDuration)).round(2)
+    float periodDuration = ( (float)(periodTimeEnd.time - periodTimeStart.time) / 1000 / 60 ).round()
+    float durationPassed = ( (float)(now.time - periodTimeStart.time) / 1000 / 60 ).round()
+    float percentThroughPeriod = (durationPassed / periodDuration).round(2)
 
     log("${app.label}: Period duration (min) ${periodDuration}, Duration passed (min) ${durationPassed}. Currently ${(percentThroughPeriod * 100).round()}% through period")
 
@@ -812,7 +849,7 @@ def getPercentThroughPeriod(periodTimeStart, periodTimeEnd, now) {
 def activateBulbStates() {
     log("${app.label}: Activating bulb states")
     
-    if ((hueZones) && ((state.periodIndex < state.periodIndexStartColorCTDivergence) || (state.altStateBright))) {
+    if ((hueZones) && ((atomicState.periodIndex < atomicState.periodIndexStartColorCTDivergence) || (atomicState.altStateBright))) {
         for (hueZone in hueZones) {
             setCBulb(hueZone)
         }
@@ -833,12 +870,12 @@ def setCBulb(bulbC) {
     def currLvl, currColorMode, currCT, currHue, currSat
     def colorModeWasReset = false
 
-    if (state.periodIndex < state.periodIndexStartColorCTDivergence || state.altStateBright) {
+    if (atomicState.periodIndex < atomicState.periodIndexStartColorCTDivergence || atomicState.altStateBright) {
         currLvl = bulbC.currentValue("level")
         log("${app.label}: ${bulbC} Current bulb level: ${currLvl}%")
-        if (currLvl != state.lvlCT) {
-            bulbC.setLevel(state.lvlCT)
-            log("${app.label}: ${bulbC} Level now changed to: ${state.lvlCT}%")
+        if (currLvl != atomicState.lvlCT) {
+            bulbC.setLevel(atomicState.lvlCT)
+            log("${app.label}: ${bulbC} Level now changed to: ${atomicState.lvlCT}%")
         } else {
             log("${app.label}: ${bulbC} Bulb already at proper level")
         }
@@ -855,9 +892,9 @@ def setCBulb(bulbC) {
 
         currCT = bulbC.currentValue("colorTemperature")
         log("${app.label}: ${bulbC} Current bulb CT: ${currCT}K")
-        if (currCT != state.temp || colorModeWasReset) {
-            bulbC.setColorTemperature(state.temp)
-            log("${app.label}: ${bulbC} CT now changed to: ${state.temp}K")
+        if (currCT != atomicState.temp || colorModeWasReset) {
+            bulbC.setColorTemperature(atomicState.temp)
+            log("${app.label}: ${bulbC} CT now changed to: ${atomicState.temp}K")
         } else {
             log("${app.label}: ${bulbC} Bulb already at proper color temperature")
         }
@@ -865,9 +902,9 @@ def setCBulb(bulbC) {
 
         currLvl = bulbC.currentValue("level")
         log("${app.label}: ${bulbC} Current bulb level: ${currLvl}%")
-        if (currLvl != state.lvlC) {
-            bulbC.setLevel(state.lvlC)
-            log("${app.label}: ${bulbC} Level now changed to: ${state.lvlC}%")
+        if (currLvl != atomicState.lvlC) {
+            bulbC.setLevel(atomicState.lvlC)
+            log("${app.label}: ${bulbC} Level now changed to: ${atomicState.lvlC}%")
         } else {
             log("${app.label}: ${bulbC} Bulb already at proper level")
         }
@@ -884,18 +921,18 @@ def setCBulb(bulbC) {
 
         currHue = bulbC.currentValue("hue")
         log("${app.label}: ${bulbC} Current bulb hue: ${currHue}")
-        if (currHue != state.hue || colorModeWasReset) {
-            bulbC.setHue(state.hue)
-            log("${app.label}: ${bulbC} hue now changed to: ${state.hue}")
+        if (currHue != atomicState.hue || colorModeWasReset) {
+            bulbC.setHue(atomicState.hue)
+            log("${app.label}: ${bulbC} hue now changed to: ${atomicState.hue}")
         } else {
             log("${app.label}: ${bulbC} Bulb already at proper hue")
         }
 
         currSat = bulbC.currentValue("saturation")
         log("${app.label}: ${bulbC} Current bulb saturation: ${currSat}")
-        if (currSat != state.sat || colorModeWasReset) {
-            bulbC.setSaturation(state.sat)
-            log("${app.label}: ${bulbC} saturation now changed to: ${state.sat}")
+        if (currSat != atomicState.sat || colorModeWasReset) {
+            bulbC.setSaturation(atomicState.sat)
+            log("${app.label}: ${bulbC} saturation now changed to: ${atomicState.sat}")
         } else {
             log("${app.label}: ${bulbC} Bulb already at proper saturation")
         }
@@ -907,22 +944,22 @@ def setCTBulb(bulbCT) {
     
     def currLvl, currCT
 
-    if (state.periodIndex <= state.periodIndexStartColorCTDivergence) {
+    if (atomicState.periodIndex <= atomicState.periodIndexStartColorCTDivergence) {
 
         currLvl = bulbCT.currentValue("level")
         log("${app.label}: ${bulbCT} Current bulb level: ${currLvl}%")
-        if (currLvl != state.lvlCT) {
-            bulbCT.setLevel(state.lvlCT)
-            log("${app.label}: ${bulbCT} Level now changed to: ${state.lvlCT}%")
+        if (currLvl != atomicState.lvlCT) {
+            bulbCT.setLevel(atomicState.lvlCT)
+            log("${app.label}: ${bulbCT} Level now changed to: ${atomicState.lvlCT}%")
         } else {
             log("${app.label}: ${bulbCT} Bulb already at proper level")
         }
 
         currCT = bulbCT.currentValue("colorTemperature")
         log("${app.label}: ${bulbCT} Current bulb CT: ${currCT}K")
-        if (currCT != state.temp) {
-            bulbCT.setColorTemperature(state.temp)
-            log("${app.label}: ${bulbCT} CT now changed to: ${state.temp}K")
+        if (currCT != atomicState.temp) {
+            bulbCT.setColorTemperature(atomicState.temp)
+            log("${app.label}: ${bulbCT} CT now changed to: ${atomicState.temp}K")
         } else {
             log("${app.label}: ${bulbCT} Bulb already at proper color temperature")
         }
@@ -933,7 +970,7 @@ def setCTBulb(bulbCT) {
 }
 
 def correctBulbs() {
-    log("${app.label}: Correcting bulbs to the following states - state.lvlCT: ${state.lvlCT}, state.temp: ${state.temp}, state.lvlC: ${state.lvlC}, state.hue: ${state.hue}, state.sat: ${state.sat}, ")
+    log("${app.label}: Correcting bulbs to the following states - atomicState.lvlCT: ${atomicState.lvlCT}, atomicState.temp: ${atomicState.temp}, atomicState.lvlC: ${atomicState.lvlC}, atomicState.hue: ${atomicState.hue}, atomicState.sat: ${atomicState.sat}, ")
     
     for (bulbCT in bulbsCT) {
         correctCTBulb(bulbCT)
@@ -947,13 +984,13 @@ def correctCTBulb(bulbCT) {
     log("${app.label}: ${bulbCT} Correcting CT Bulb state")
 
     if (bulbCT.currentValue("switch") == "on") {
-        if (state.periodIndex <= state.periodIndexStartColorCTDivergence) {
+        if (atomicState.periodIndex <= atomicState.periodIndexStartColorCTDivergence) {
 
-            bulbCT.setLevel(state.lvlCT)
-            log("${app.label}: ${bulbCT} Level set to: ${state.lvlCT}")
+            bulbCT.setLevel(atomicState.lvlCT)
+            log("${app.label}: ${bulbCT} Level set to: ${atomicState.lvlCT}")
 
-            bulbCT.setColorTemperature(state.temp)
-            log("${app.label}: ${bulbCT} CT set to: ${state.temp}")
+            bulbCT.setColorTemperature(atomicState.temp)
+            log("${app.label}: ${bulbCT} CT set to: ${atomicState.temp}")
             
         } else {
             bulbCT.off()
@@ -968,30 +1005,30 @@ def correctCBulb(bulbC) {
     log("${app.label}: ${bulbC} Correcting Color Bulb state")
 
     if (bulbC.currentValue("switch") == "on") {
-        if (state.periodIndex < state.periodIndexStartColorCTDivergence) {
+        if (atomicState.periodIndex < atomicState.periodIndexStartColorCTDivergence) {
 
-            bulbC.setLevel(state.lvlCT)
-            log("${app.label}: ${bulbC} Level set to: ${state.lvlCT}")
+            bulbC.setLevel(atomicState.lvlCT)
+            log("${app.label}: ${bulbC} Level set to: ${atomicState.lvlCT}")
 
             bulbC.updateSetting("colorMode", "CT")
             log("${app.label}: ${bulbC} Color mode set to: CT")
 
-            bulbC.setColorTemperature(state.temp)
-            log("${app.label}: ${bulbC} CT set to: ${state.temp}")
+            bulbC.setColorTemperature(atomicState.temp)
+            log("${app.label}: ${bulbC} CT set to: ${atomicState.temp}")
             
         } else {
 
-            bulbC.setLevel(state.lvlC)
-            log("${app.label}: ${bulbC} Level set to: ${state.lvlC}")
+            bulbC.setLevel(atomicState.lvlC)
+            log("${app.label}: ${bulbC} Level set to: ${atomicState.lvlC}")
 
             bulbC.updateSetting("colorMode", "RGB")
             log("${app.label}: ${bulbC} Color Mode set to: RGB")
 
-            bulbC.setHue(state.hue)
-            log("${app.label}: ${bulbC} hue set to: ${state.hue}")
+            bulbC.setHue(atomicState.hue)
+            log("${app.label}: ${bulbC} hue set to: ${atomicState.hue}")
 
-            bulbC.setSaturation(state.sat)
-            log("${app.label}: ${bulbC} saturation set to: ${state.sat}")
+            bulbC.setSaturation(atomicState.sat)
+            log("${app.label}: ${bulbC} saturation set to: ${atomicState.sat}")
         }
     } else {
         log("${app.label}: ${bulbC} Bulb not on")
@@ -999,7 +1036,7 @@ def correctCBulb(bulbC) {
 }
 
 def log(debugText) {
-    if (settings.log) {
+    if (settings.log == true) {
         log.info "${app.name}: ${debugText}"
     }
 }

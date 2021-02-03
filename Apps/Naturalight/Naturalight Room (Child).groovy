@@ -13,6 +13,7 @@
         2.1 (2021-02-03)
             -Fixed: BUG: Turning off Alternate Dim State while lights are off turns lights on
             -Fixed: BUG: Turning light off with a toggle button and Alternate Dim State active, lights don't turn back on (use Alternate Bright State on as workaround)
+            -Switched from state to atomicState due to ack'd Hubitat bug tinyurl.com/u0z8tjt7
             -Explicitly defined conditionals to ==true or ==false rather than exists or !exists
             -Cleaned up some sloppy type-ing
 

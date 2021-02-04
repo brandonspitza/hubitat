@@ -614,32 +614,6 @@ def setPeriodBulbValues() {
     if (satGoalEveningCT == null) { satGoalEveningCT = parent.getSatGoalEveningCT() }
     if (satGoalEveningC == null) { satGoalEveningC = parent.getSatGoalEveningC() }
     if (satGoalNight == null) { satGoalNight = parent.getSatGoalNight() }
-    
-    /*
-    if (lvlAltStateBright == null) { lvlAltStateBright = Integer.parseInt(parent.getLvlAltStateBright()) }
-    if (tempAltStateBright == null) { tempAltStateBright = Integer.parseInt(parent.getTempAltStateBright()) }
-    if (lvlAltStateDim == null) { lvlAltStateDim = Integer.parseInt(parent.getLvlAltStateDim()) }
-    if (tempAltStateDim == null) { tempAltStateDim = Integer.parseInt(parent.getTempAltStateDim()) }
-    if (tempColdest == null) { tempColdest = Integer.parseInt(parent.getTempColdest()) }
-    if (tempWarmest == null) { tempWarmest = Integer.parseInt(parent.getTempWarmest()) }
-    if (lvlInitWarmMorn == null) { lvlInitWarmMorn = Integer.parseInt(parent.getLvlInitWarmMorn()) }
-    if (lvlGoalWarmMorn == null) { lvlGoalWarmMorn = Integer.parseInt(parent.getLvlGoalWarmMorn()) }
-    if (lvlGoalColdMorn == null) { lvlGoalColdMorn = Integer.parseInt(parent.getLvlGoalColdMorn()) }
-    if (lvlGoalDay == null) { lvlGoalDay = Integer.parseInt(parent.getLvlGoalDay()) }
-    if (lvlGoalAfternoon == null) { lvlGoalAfternoon = Integer.parseInt(parent.getLvlGoalAfternoon()) }
-    if (lvlCTGoalEveningCT == null) { lvlCTGoalEveningCT = Integer.parseInt(parent.getLvlCTGoalEveningCT()) }
-    if (lvlCGoalEveningCT == null) { lvlCGoalEveningCT = Integer.parseInt(parent.getLvlCGoalEveningCT()) }
-    if (lvlCGoalEveningC == null) { lvlCGoalEveningC = Integer.parseInt(parent.getLvlCGoalEveningC()) }
-    if (lvlCGoalNight == null) { lvlCGoalNight = Integer.parseInt(parent.getLvlCGoalNight()) }
-    if (hueInitEveningCT == null) { hueInitEveningCT = Integer.parseInt(parent.getHueInitEveningCT()) }
-    if (hueGoalEveningCT == null) { hueGoalEveningCT = Integer.parseInt(parent.getHueGoalEveningCT()) }
-    if (hueGoalEveningC == null) { hueGoalEveningC = Integer.parseInt(parent.getHueGoalEveningC()) }
-    if (hueGoalNight == null) { hueGoalNight = Integer.parseInt(parent.getHueGoalNight()) }
-    if (satInitEveningCT == null) { satInitEveningCT = Integer.parseInt(parent.getSatInitEveningCT()) }
-    if (satGoalEveningCT == null) { satGoalEveningCT = Integer.parseInt(parent.getSatGoalEveningCT()) }
-    if (satGoalEveningC == null) { satGoalEveningC = Integer.parseInt(parent.getSatGoalEveningC()) }
-    if (satGoalNight == null) { satGoalNight = Integer.parseInt(parent.getSatGoalNight()) }
-    */
 }
 
 def setBulbStates(now) {    
@@ -732,11 +706,11 @@ def setBulbStates(now) {
         lvlCGoal = lvlCGoalEveningC
         atomicState.lvlC = getWeightedStateVal(lvlCInit, lvlCGoal, percentThroughPeriod)
         
-        hueInit = hueInitEveningCT
+        hueInit = hueGoalEveningCT
         hueGoal = hueGoalEveningC
         atomicState.hue = getWeightedStateVal(hueInit, hueGoal, percentThroughPeriod)
         
-        satInit = satInitEveningCT
+        satInit = satGoalEveningCT
         satGoal = satGoalEveningC
         atomicState.sat = getWeightedStateVal(satInit, satGoal, percentThroughPeriod)
         

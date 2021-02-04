@@ -769,7 +769,7 @@ def setBulbStates(now) {
 }
 
 def getWeightedStateVal(init, goal, percentThroughPeriod) {
-    return ((init + ((float)goal - init)) * percentThroughPeriod).round()
+    return ( init + ((float)goal - init) * percentThroughPeriod ).round()
 }
 
 def setPeriod(now) {

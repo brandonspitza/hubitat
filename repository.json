@@ -1,0 +1,18 @@
+{
+  "author": "Brandon Spitza",
+  "gitHubUrl": "https://github.com/brandonspitza",
+  "packages": [
+    {
+      "id": "4f7d0b19-554c-4d79-9777-079fdd175791",
+      "name": "Naturalight",
+      "category": "Convenience",
+      "location": "https://raw.githubusercontent.com/brandonspitza/hubitat/main/apps/Naturalight/packageManifest.json",
+      "description": "Naturalight divides the day into eight periods where one period slowly fades into the next, allowing your eyes to adjust with no abrupt changes, reducing the perception of lighting changes.",
+      "tags": [
+        "Automations & Groups",
+        "Lights & Switches",
+	"Buttons"
+      ]
+    }
+  ]
+}

@@ -7,7 +7,7 @@
       "name": "Naturalight",
       "category": "Convenience",
       "location": "https://raw.githubusercontent.com/brandonspitza/hubitat/main/apps/Naturalight/packageManifest.json",
-      "description": "Naturalight divides the day into eight periods where one period slowly fades into the next, allowing your eyes to adjust with no abrupt changes, reducing the perception of lighting changes.",
+      "description": "https://community.hubitat.com/t/release-app-naturalight-home-room-v2-0/62343",
       "tags": [
         "Automations & Groups",
         "Lights & Switches",

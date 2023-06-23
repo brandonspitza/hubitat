@@ -1,0 +1,27 @@
+{
+  "packageName": "Naturalight",
+  "author": "Brandon Spitza",
+  "version": "2.1.1",
+  "minimumHEVersion": "2.3.0",
+  "dateReleased": "2021-01-19",
+  "apps": [
+    {
+      "id": "808a55f9-d942-4499-a2d3-26566feda89e",
+      "name": "Naturalight Home",
+      "namespace": "naturalight",
+      "location": "https://github.com/brandonspitza/hubitat/raw/main/apps/Naturalight/Naturalight_Home_(Parent).groovy",
+      "required": true,
+      "oauth": false,
+      "primary": false
+    },
+    {
+      "id": "ca45cc26-1a21-4b75-81a6-082cd2d51619",
+      "name": "Naturalight Room",
+      "namespace": "naturalight",
+      "location": "https://raw.githubusercontent.com/brandonspitza/hubitat/main/apps/Naturalight/Naturalight_Room_(Child).groovy",
+      "required": true,
+      "oauth": false,
+      "primary": false
+    }
+  ]
+}

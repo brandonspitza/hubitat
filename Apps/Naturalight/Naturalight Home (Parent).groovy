@@ -1,6 +1,6 @@
 /*
 
-    Hubitat Natrualight Home (Parent) v2.11
+    Hubitat Natrualight Home (Parent) v2.1.1
 
     Author:
             Brandon Spitza
@@ -13,7 +13,7 @@
         2.1 (2021-01-20)
             -Added timezone offset input to timePage which localizes default suggestions for period times
 
-        2.11 (2021-01-21)
+        2.1.1 (2021-01-21)
             -Modified welcome page description for further clarity
             -Fixed: BUG: Turning off Alternate Dim State while lights are off turns lights on
             -Fixed: BUG: Turning light off with a toggle button and Alternate Dim State active, lights don't turn back on (use Alternate Bright State on as workaround)
